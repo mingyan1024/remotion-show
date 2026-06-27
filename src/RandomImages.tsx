@@ -1,8 +1,9 @@
-﻿import React from "react";
+import React, { useState } from "react";
+import { getStaticFiles } from "@remotion/studio";
 import {
   AbsoluteFill,
-  Img,
   Easing,
+  Img,
   interpolate,
   staticFile,
   useCurrentFrame,
@@ -13,17 +14,34 @@ type PhotoItem = {
   x: number;
   y: number;
   rotate: number;
-  delay: number;
   width: number;
+  delay: number;
 };
 
-const photos: PhotoItem[] = [
-  { src: staticFile("images-duang/1.png"), x: 140, y: 110, rotate: -12, delay: 0, width: 850 },
-  { src: staticFile("images-duang/2.png"), x: 1060, y: 70, rotate: 8, delay: 6, width: 830 },
-  { src: staticFile("images-duang/3.png"), x: 260, y: 760, rotate: -6, delay: 12, width: 860 },
-  { src: staticFile("images-duang/4.png"), x: 950, y: 330, rotate: 0, delay: 18, width: 880 },
-  { src: staticFile("images-duang/5.png"), x: 450, y: 330, rotate: -9, delay: 24, width: 840 },
-];
+const imageFilePattern = /^random-images\/.+\.(png|jpe?g|webp|gif)$/i;
+
+const randomBetween = (min: number, max: number) =>
+  Math.random() * (max - min) + min;
+
+const getRandomImageNames = () => {
+  return getStaticFiles()
+    .filter((file) => imageFilePattern.test(file.name))
+    .map((file) => file.name)
+    .sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
+};
+
+const createLayout = (): PhotoItem[] => {
+  return getRandomImageNames().map((name, index) => {
+    return {
+      src: staticFile(name),
+      x: randomBetween(0, 1200),
+      y: randomBetween(0, 700),
+      rotate: randomBetween(-18, 18),
+      width: randomBetween(700, 1000),
+      delay: index * 6,
+    };
+  });
+};
 
 const PhotoCard: React.FC<{ photo: PhotoItem }> = ({ photo }) => {
   const frame = useCurrentFrame();
@@ -35,19 +53,19 @@ const PhotoCard: React.FC<{ photo: PhotoItem }> = ({ photo }) => {
     easing: Easing.bezier(0.2, 1.2, 0.25, 1),
   });
 
-  const settle = interpolate(localFrame, [0, 10, 18], [34, -8, 0], {
+  const settle = interpolate(localFrame, [0, 10, 18], [48, -12, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: Easing.bezier(0.2, 1, 0.3, 1),
+    easing: Easing.bezier(0.18, 0.9, 0.28, 1),
   });
 
-  const wobble = interpolate(localFrame, [0, 8, 16], [0.96, 1.08, 1], {
+  const scale = interpolate(localFrame, [0, 8, 16], [0.18, 1.12, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: Easing.bezier(0.17, 0.84, 0.44, 1),
+    easing: Easing.bezier(0.2, 1.1, 0.3, 1),
   });
 
-  const floatOffset = Math.sin((frame + photo.delay * 2) / 12) * 6;
+  const floatOffset = Math.sin((frame + photo.delay * 3) / 14) * 5;
 
   return (
     <div
@@ -57,7 +75,7 @@ const PhotoCard: React.FC<{ photo: PhotoItem }> = ({ photo }) => {
         top: photo.y + settle + floatOffset,
         width: photo.width,
         opacity: progress,
-        scale: progress * wobble,
+        scale,
         rotate: `${photo.rotate * progress}deg`,
         filter: "drop-shadow(0 18px 35px rgba(0, 0, 0, 0.35))",
       }}
@@ -68,7 +86,6 @@ const PhotoCard: React.FC<{ photo: PhotoItem }> = ({ photo }) => {
           padding: 10,
           borderRadius: 18,
           boxShadow: "0 18px 50px rgba(0,0,0,0.22)",
-          transform: "translateZ(0)",
         }}
       >
         <Img
@@ -86,7 +103,8 @@ const PhotoCard: React.FC<{ photo: PhotoItem }> = ({ photo }) => {
   );
 };
 
-export const ImagesDuangComposition: React.FC = () => {
+export const RandomImagesComposition: React.FC = () => {
+  const [photos] = useState(createLayout);
   const frame = useCurrentFrame();
   const vignette = interpolate(frame, [0, 20, 60], [0, 0.2, 0.28], {
     extrapolateLeft: "clamp",
@@ -96,8 +114,7 @@ export const ImagesDuangComposition: React.FC = () => {
   return (
     <AbsoluteFill
       style={{
-        background:
-          "transparent",
+        background: "transparent",
         overflow: "hidden",
       }}
     >
@@ -107,20 +124,6 @@ export const ImagesDuangComposition: React.FC = () => {
           inset: 0,
           background:
             "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0))",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          width: 760,
-          height: 420,
-          transform: "translate(-50%, -50%)",
-          borderRadius: 32,
-          background: "rgba(255,255,255,0.06)",
-          boxShadow: "0 0 0 1px rgba(255,255,255,0.1) inset",
-          filter: `blur(${interpolate(frame, [0, 30], [18, 0], { extrapolateRight: "clamp" })}px)`,
         }}
       />
       {photos.map((photo) => (
@@ -137,3 +140,4 @@ export const ImagesDuangComposition: React.FC = () => {
     </AbsoluteFill>
   );
 };
+
