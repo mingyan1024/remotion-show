@@ -1,7 +1,41 @@
-node_modules
-dist
-.DS_Store
-.env
+# Dependencies
+node_modules/
 
-# Ignore the output video from Git but not videos you import into src/.
-out
+# Remotion build & render output
+out/
+dist/
+build/
+.remotion/
+
+# Rendered media files (videos/audio produced by Remotion)
+*.mp4
+*.webm
+*.mov
+*.mkv
+*.avi
+*.gif
+*.mp3
+*.wav
+*.aac
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
