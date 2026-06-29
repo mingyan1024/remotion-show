@@ -11,3 +11,10 @@ import { enableTailwind } from '@remotion/tailwind-v4';
 Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);
 Config.overrideWebpackConfig(enableTailwind);
+
+Config.overrideWebpackConfig((currentConfiguration) => {
+    return {
+        ...currentConfiguration,
+        cache: false, // 禁用 webpack 缓存
+    };
+});
